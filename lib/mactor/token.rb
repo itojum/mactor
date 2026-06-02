@@ -19,5 +19,12 @@ module Mactor
     List = define_token(:ordered, :items)
     ThematicBreak = define_token
     Blockquote = define_token(:content)
+
+    Text       = define_token(:content)
+    Strong     = define_token(:content)
+    Emphasis   = define_token(:content)
+    InlineCode = define_token(:content)
+    Link       = define_token(:text, :url)
+    Image      = define_token(:alt, :url)
   end
 end
