@@ -58,6 +58,43 @@ RSpec.describe Mactor do
     end
   end
 
+  describe ".to_html complex document" do
+    it "renders a mixed-content document end-to-end" do
+      source = <<~MD
+        # Title
+
+        A paragraph with **bold** and *italic*.
+
+        - item one
+        - item two
+
+        > A blockquote
+
+        ```ruby
+        puts 'hi'
+        ```
+      MD
+      html = Mactor.to_html(source)
+      expect(html).to include("<h1>Title</h1>")
+      expect(html).to include("<strong>bold</strong>")
+      expect(html).to include("<em>italic</em>")
+      expect(html).to include("<ul>")
+      expect(html).to include("<li>item one</li>")
+      expect(html).to include("<blockquote>")
+      expect(html).to include("<pre><code class=\"language-ruby\">")
+    end
+
+    it "renders nested inline markup inside strong" do
+      html = Mactor.to_html("**bold *inner* more**")
+      expect(html).to include("<strong>bold <em>inner</em> more</strong>")
+    end
+
+    it "renders inline markup inside link text" do
+      html = Mactor.to_html("[**bold** link](https://example.com)")
+      expect(html).to include('<a href="https://example.com"><strong>bold</strong> link</a>')
+    end
+  end
+
   describe "Ractor compatibility" do
     it "can be called from within a Ractor" do
       source = "# Hello\n\n**world**\n".freeze

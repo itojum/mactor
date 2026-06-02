@@ -198,6 +198,14 @@ RSpec.describe Mactor::Lexer do
       end
     end
 
+    context "unordered list with + marker" do
+      it "recognizes + as an unordered marker" do
+        token = described_class.new("+ item\n").tokenize.first
+        expect(token).to be_a(Mactor::Token::List)
+        expect(token).to have_attributes(ordered: false, items: ["item"])
+      end
+    end
+
     context "ordered list" do
       it "groups consecutive ordered items into one List" do
         result = described_class.new("1. foo\n2. bar\n3. baz\n").tokenize
@@ -216,6 +224,20 @@ RSpec.describe Mactor::Lexer do
         result = described_class.new("- foo\n1. bar\n").tokenize
         expect(result[0]).to have_attributes(ordered: false, items: ["foo"])
         expect(result[1]).to have_attributes(ordered: true, items: ["bar"])
+      end
+    end
+
+    context "list and blockquote interleaving" do
+      it "flushes a pending list when a blockquote follows" do
+        result = described_class.new("- item\n> quote\n").tokenize
+        expect(result[0]).to be_a(Mactor::Token::List)
+        expect(result[1]).to be_a(Mactor::Token::Blockquote)
+      end
+
+      it "flushes a pending blockquote when a list follows" do
+        result = described_class.new("> quote\n- item\n").tokenize
+        expect(result[0]).to be_a(Mactor::Token::Blockquote)
+        expect(result[1]).to be_a(Mactor::Token::List)
       end
     end
 
@@ -244,6 +266,35 @@ RSpec.describe Mactor::Lexer do
         result = described_class.new("text\n> quote\n").tokenize
         expect(result[0]).to be_a(Mactor::Token::Paragraph)
         expect(result[1]).to be_a(Mactor::Token::Blockquote)
+      end
+    end
+
+    context "blank lines" do
+      it "handles multiple consecutive blank lines between paragraphs" do
+        result = described_class.new("foo\n\n\n\nbar\n").tokenize
+        paragraphs = result.select { |t| t.is_a?(Mactor::Token::Paragraph) }
+        expect(paragraphs.length).to eq(2)
+        expect(paragraphs[0]).to have_attributes(content: "foo")
+        expect(paragraphs[1]).to have_attributes(content: "bar")
+      end
+    end
+
+    context "blockquote without space after >" do
+      it "strips > and returns the rest as content" do
+        token = described_class.new(">content\n").tokenize.first
+        expect(token).to be_a(Mactor::Token::Blockquote)
+        expect(token).to have_attributes(content: "content")
+      end
+    end
+
+    context "consecutive code blocks" do
+      it "tokenizes two adjacent code blocks" do
+        source = "```\nfirst\n```\n```\nsecond\n```\n"
+        result = described_class.new(source).tokenize
+        code_blocks = result.select { |t| t.is_a?(Mactor::Token::CodeBlock) }
+        expect(code_blocks.length).to eq(2)
+        expect(code_blocks[0]).to have_attributes(content: "first")
+        expect(code_blocks[1]).to have_attributes(content: "second")
       end
     end
 

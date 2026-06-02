@@ -73,6 +73,43 @@ RSpec.describe Mactor::InlineLexer do
       end
     end
 
+    context "edge cases" do
+      it "treats ** with no content as plain text" do
+        expect(tokenize("**")).to eq([Mactor::Token::Text.new(content: "**")])
+      end
+
+      it "treats empty link syntax as plain text" do
+        expect(tokenize("[]()")).to eq([Mactor::Token::Text.new(content: "[]()")])
+      end
+
+      it "handles multiple consecutive strong elements" do
+        expect(tokenize("**a** **b**")).to eq([
+          Mactor::Token::Strong.new(content: "a"),
+          Mactor::Token::Text.new(content: " "),
+          Mactor::Token::Strong.new(content: "b"),
+        ])
+      end
+
+      it "handles multiple consecutive emphasis elements" do
+        expect(tokenize("*a* *b*")).to eq([
+          Mactor::Token::Emphasis.new(content: "a"),
+          Mactor::Token::Text.new(content: " "),
+          Mactor::Token::Emphasis.new(content: "b"),
+        ])
+      end
+
+      it "tokenizes strong containing emphasis markers as Strong (non-greedy)" do
+        result = tokenize("**bold *inner* more**")
+        expect(result.first).to be_a(Mactor::Token::Strong)
+        expect(result.first.content).to eq("bold *inner* more")
+      end
+
+      it "handles a URL with special characters in a link" do
+        result = tokenize("[link](/path?a=1&b=2)")
+        expect(result.first).to eq(Mactor::Token::Link.new(text: "link", url: "/path?a=1&b=2"))
+      end
+    end
+
     context "mixed content" do
       it "splits surrounding text and inline elements" do
         expect(tokenize("Hello **world** and *em*")).to eq([

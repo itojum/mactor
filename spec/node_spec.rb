@@ -70,6 +70,32 @@ RSpec.describe Mactor::Node do
     end
   end
 
+  describe "required attribute validation" do
+    it "raises ArgumentError when children is nil for Paragraph" do
+      expect { Mactor::Node::Paragraph.new(children: nil) }.to raise_error(ArgumentError, /children cannot be nil/)
+    end
+
+    it "raises ArgumentError when level is nil for Heading" do
+      expect { Mactor::Node::Heading.new(level: nil, children: []) }.to raise_error(ArgumentError, /level cannot be nil/)
+    end
+
+    it "raises ArgumentError when content is nil for Text" do
+      expect { Mactor::Node::Text.new(content: nil) }.to raise_error(ArgumentError, /content cannot be nil/)
+    end
+
+    it "raises ArgumentError when content is nil for CodeBlock" do
+      expect { Mactor::Node::CodeBlock.new(content: nil) }.to raise_error(ArgumentError, /content cannot be nil/)
+    end
+
+    it "raises ArgumentError when href is nil for Link" do
+      expect { Mactor::Node::Link.new(href: nil, children: []) }.to raise_error(ArgumentError, /href cannot be nil/)
+    end
+
+    it "raises ArgumentError when src is nil for Image" do
+      expect { Mactor::Node::Image.new(src: nil, alt: "x") }.to raise_error(ArgumentError, /src cannot be nil/)
+    end
+  end
+
   describe "Ractor compatibility" do
     ALL_NODES.each do |entry|
       it "#{entry[:klass].name} can be passed between Ractors without freezing" do

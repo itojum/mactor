@@ -98,6 +98,38 @@ RSpec.describe Mactor::Parser do
       end
     end
 
+    context "inline markup nesting" do
+      it "processes inline nodes inside Strong content" do
+        tokens = lex("**bold *inner* more**")
+        para = parse(tokens).children.first
+        strong = para.children.first
+        expect(strong).to be_a(Mactor::Node::Strong)
+        expect(strong.children[0]).to eq(Mactor::Node::Text.new(content: "bold "))
+        expect(strong.children[1]).to be_a(Mactor::Node::Emphasis)
+        expect(strong.children[1].children.first).to eq(Mactor::Node::Text.new(content: "inner"))
+        expect(strong.children[2]).to eq(Mactor::Node::Text.new(content: " more"))
+      end
+
+      it "processes inline nodes inside Emphasis content" do
+        tokens = lex("*em `code` em*")
+        para = parse(tokens).children.first
+        em = para.children.first
+        expect(em).to be_a(Mactor::Node::Emphasis)
+        expect(em.children[0]).to eq(Mactor::Node::Text.new(content: "em "))
+        expect(em.children[1]).to be_a(Mactor::Node::InlineCode)
+        expect(em.children[2]).to eq(Mactor::Node::Text.new(content: " em"))
+      end
+
+      it "processes inline nodes in link text" do
+        tokens = lex("[**bold** link](url)")
+        para = parse(tokens).children.first
+        link = para.children.first
+        expect(link).to be_a(Mactor::Node::Link)
+        expect(link.children.first).to be_a(Mactor::Node::Strong)
+        expect(link.children.last).to eq(Mactor::Node::Text.new(content: " link"))
+      end
+    end
+
     context "multiple tokens" do
       it "builds a document with multiple children" do
         tokens = lex("# Title\n\nHello world\n")

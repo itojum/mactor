@@ -56,11 +56,15 @@ module Mactor
       end
 
       def render_link(node)
-        "<a href=\"#{h(node.href)}\">#{render_children(node)}</a>"
+        title_attr = ""
+        title_attr = " title=\"#{h(node.title)}\"" if node.title
+        "<a href=\"#{h(node.href)}\"#{title_attr}>#{render_children(node)}</a>"
       end
 
       def render_image(node)
-        "<img src=\"#{h(node.src)}\" alt=\"#{h(node.alt)}\">"
+        title_attr = ""
+        title_attr = " title=\"#{h(node.title)}\"" if node.title
+        "<img src=\"#{h(node.src)}\" alt=\"#{h(node.alt)}\"#{title_attr}>"
       end
 
       private

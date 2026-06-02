@@ -57,10 +57,10 @@ module Mactor
     def inline_token_to_node(token)
       case token
       when Token::Text       then Node::Text.new(content: token.content)
-      when Token::Strong     then Node::Strong.new(children: [Node::Text.new(content: token.content)].freeze)
-      when Token::Emphasis   then Node::Emphasis.new(children: [Node::Text.new(content: token.content)].freeze)
+      when Token::Strong     then Node::Strong.new(children: inline_nodes(token.content))
+      when Token::Emphasis   then Node::Emphasis.new(children: inline_nodes(token.content))
       when Token::InlineCode then Node::InlineCode.new(content: token.content)
-      when Token::Link       then Node::Link.new(href: token.url, children: [Node::Text.new(content: token.text)].freeze)
+      when Token::Link       then Node::Link.new(href: token.url, children: inline_nodes(token.text))
       when Token::Image      then Node::Image.new(src: token.url, alt: token.alt)
       end
     end

@@ -130,6 +130,21 @@ RSpec.describe Mactor::Renderer::Html do
       node = Mactor::Node::Link.new(href: "/path?a=1&b=2", children: [text("link")])
       expect(render(node)).to eq('<a href="/path?a=1&amp;b=2">link</a>')
     end
+
+    it "renders title attribute when present" do
+      node = Mactor::Node::Link.new(href: "https://example.com", title: "My Link", children: [text("click")])
+      expect(render(node)).to eq('<a href="https://example.com" title="My Link">click</a>')
+    end
+
+    it "omits title attribute when nil" do
+      node = Mactor::Node::Link.new(href: "https://example.com", children: [text("click")])
+      expect(render(node)).not_to include("title=")
+    end
+
+    it "escapes special characters in title" do
+      node = Mactor::Node::Link.new(href: "/", title: 'Say "hi"', children: [text("click")])
+      expect(render(node)).to eq('<a href="/" title="Say &quot;hi&quot;">click</a>')
+    end
   end
 
   describe "Node::Image" do
@@ -141,6 +156,16 @@ RSpec.describe Mactor::Renderer::Html do
     it "escapes HTML in alt text" do
       node = Mactor::Node::Image.new(src: "/img.png", alt: "<logo>")
       expect(render(node)).to eq('<img src="/img.png" alt="&lt;logo&gt;">')
+    end
+
+    it "renders title attribute when present" do
+      node = Mactor::Node::Image.new(src: "/img.png", alt: "photo", title: "Caption")
+      expect(render(node)).to eq('<img src="/img.png" alt="photo" title="Caption">')
+    end
+
+    it "omits title attribute when nil" do
+      node = Mactor::Node::Image.new(src: "/img.png", alt: "photo")
+      expect(render(node)).not_to include("title=")
     end
   end
 
@@ -158,6 +183,34 @@ RSpec.describe Mactor::Renderer::Html do
         Mactor::Node::Strong.new(children: [text("world")])
       ])
       expect(render(node)).to eq("<p>Hello <strong>world</strong></p>\n")
+    end
+
+    it "renders emphasis nested inside strong" do
+      node = Mactor::Node::Strong.new(children: [
+        Mactor::Node::Emphasis.new(children: [text("bold italic")])
+      ])
+      expect(render(node)).to eq("<strong><em>bold italic</em></strong>")
+    end
+  end
+
+  describe "empty containers" do
+    it "renders empty paragraph" do
+      expect(render(Mactor::Node::Paragraph.new(children: []))).to eq("<p></p>\n")
+    end
+
+    it "renders empty unordered list" do
+      expect(render(Mactor::Node::List.new(ordered: false, children: []))).to eq("<ul>\n</ul>\n")
+    end
+
+    it "renders empty blockquote" do
+      expect(render(Mactor::Node::Blockquote.new(children: []))).to eq("<blockquote></blockquote>\n")
+    end
+  end
+
+  describe "Node::CodeBlock language with special characters" do
+    it "renders language name containing special characters as-is" do
+      node = Mactor::Node::CodeBlock.new(language: "c++", content: "int x;")
+      expect(render(node)).to eq("<pre><code class=\"language-c++\">int x;</code></pre>\n")
     end
   end
 end
