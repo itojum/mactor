@@ -1,43 +1,131 @@
 # Mactor
 
-TODO: Delete this and the text below, and describe your gem
+**Ractor-compatible Markdown parser+**
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/mactor`. To experiment with that code, run `bin/console` for an interactive prompt.
+Mactor parses Markdown text into an AST (Abstract Syntax Tree) and renders it to HTML or any custom format. Every data structure is immutable and Ractor-safe by design.
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+Add to your Gemfile:
 
-Install the gem and add to the application's Gemfile by executing:
-
-```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+```ruby
+gem "mactor"
 ```
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+Or install directly:
 
 ```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+gem install mactor
 ```
 
 ## Usage
 
-TODO: Write usage instructions here
+### Parse to AST
 
-## Development
+```ruby
+require "mactor"
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+doc = Mactor.parse("# Hello\n\nThis is **mactor**.")
+# => #<data Mactor::Node::Document ...>
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+doc.children.first
+# => #<data Mactor::Node::Heading level=1, ...>
+```
 
-## Contributing
+### Convert to HTML
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/mactor. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/mactor/blob/main/CODE_OF_CONDUCT.md).
+```ruby
+html = Mactor.to_html("# Hello\n\nThis is **mactor**.")
+# => "<h1>Hello</h1>\n<p>This is <strong>mactor</strong>.</p>\n"
+```
+
+## Custom Renderers
+
+Inherit from `Mactor::Renderer::Html` and override the methods you need. Unoverridden methods fall back to the default HTML output.
+
+```ruby
+require "mactor"
+
+class HighlightRenderer < Mactor::Renderer::Html
+  def render_code_block(node)
+    "<pre><code>#{highlight(node.content, node.language)}</code></pre>\n"
+  end
+
+  def render_heading(node)
+    id = render_children(node).downcase.gsub(/\s+/, "-")
+    "<h#{node.level} id=\"#{id}\">#{render_children(node)}</h#{node.level}>\n"
+  end
+end
+
+html = Mactor.render(source, renderer: HighlightRenderer.new)
+```
+
+A `config` hash can be passed to the constructor and is automatically frozen:
+
+```ruby
+renderer = HighlightRenderer.new(theme: "monokai")
+# Access inside render_* methods via @config[:theme]
+```
+
+For non-HTML output formats, inherit from `Mactor::Renderer::Base` instead and implement all `render_*` methods.
+
+## Ractor Support
+
+All AST nodes are frozen `Data` objects, making them safe to share across Ractors without copying.
+
+```ruby
+require "mactor"
+
+sources = ["# Hello", "**bold**", "- foo\n- bar"]
+
+results = sources
+  .map { |src| Ractor.new(src) { |s| Mactor.to_html(s) } }
+  .map(&:value)
+
+# => [
+#   "<h1>Hello</h1>\n",
+#   "<p><strong>bold</strong></p>\n",
+#   "<ul>\n<li>foo</li>\n<li>bar</li>\n</ul>\n"
+# ]
+```
+
+## Supported Markdown Elements (v1)
+
+### Block elements
+
+| Syntax | Node |
+|---|---|
+| `#` – `######` | `Node::Heading` (level 1–6) |
+| Blank-line-separated text | `Node::Paragraph` |
+| ` ``` ` … ` ``` ` | `Node::CodeBlock` (optional language tag) |
+| `- ` / `* ` / `+ ` | `Node::List` (ordered: false) |
+| `1. ` `2. ` … | `Node::List` (ordered: true) |
+| `> ` | `Node::Blockquote` |
+| `---` / `***` / `___` (spaces allowed) | `Node::ThematicBreak` |
+
+### Inline elements
+
+| Syntax | Node |
+|---|---|
+| `**text**` | `Node::Strong` |
+| `*text*` | `Node::Emphasis` |
+| `` `code` `` | `Node::InlineCode` |
+| `[text](url)` | `Node::Link` |
+| `![alt](url)` | `Node::Image` |
+| Plain text | `Node::Text` |
+
+## Roadmap
+
+Mactor is working toward full CommonMark compliance incrementally.
+
+- [ ] CommonMark edge cases (setext headings, lazy continuation lines, etc.)
+- [ ] Nested inline elements (`**_bold italic_**`)
+- [ ] Link and image `title` attribute
+- [ ] Nested block elements (lists inside blockquotes, etc.)
+- [ ] Tables (GFM extension)
+- [ ] Strikethrough and task lists (GFM extension)
+- [ ] HTML renderer options (custom classes, id attributes, etc.)
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-
-## Code of Conduct
-
-Everyone interacting in the Mactor project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/mactor/blob/main/CODE_OF_CONDUCT.md).
+[MIT License](LICENSE.txt)
