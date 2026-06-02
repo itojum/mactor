@@ -4,11 +4,15 @@ module Mactor
       private
 
       def define_node(*plain_attrs, **attr_specs)
-        all_specs = plain_attrs.each_with_object({}) { |a, h| h[a] = {} }.merge(attr_specs)
+        all_specs = plain_attrs.each_with_object({}) { |a, h| h[a] = {}.freeze }
+                               .merge(attr_specs.transform_values(&:freeze))
+                               .freeze
 
         Data.define(*all_specs.keys) do
-          define_method(:initialize) do |**kwargs|
-            all_specs.each do |attr, opts|
+          const_set(:ATTR_SPECS, all_specs)
+
+          def initialize(**kwargs)
+            self.class::ATTR_SPECS.each do |attr, opts|
               kwargs[attr] = nil unless kwargs.key?(attr)
               raise ArgumentError, "#{attr} cannot be nil" if !opts.fetch(:nil, false) && kwargs[attr].nil?
             end

@@ -1,11 +1,69 @@
 # frozen_string_literal: true
 
+require "spec_helper"
+
 RSpec.describe Mactor do
   it "has a version number" do
     expect(Mactor::VERSION).not_to be_nil
   end
 
-  it "does something useful" do
-    expect(false).not_to eq(true)
+  describe ".parse" do
+    it "returns a Node::Document" do
+      expect(Mactor.parse("# Hello")).to be_a(Mactor::Node::Document)
+    end
+
+    it "returns an empty Document for an empty string" do
+      expect(Mactor.parse("")).to eq(Mactor::Node::Document.new(children: []))
+    end
+
+    it "parses headings and paragraphs" do
+      doc = Mactor.parse("# Title\n\nHello world\n")
+      expect(doc.children[0]).to be_a(Mactor::Node::Heading)
+      expect(doc.children[1]).to be_a(Mactor::Node::Paragraph)
+    end
+  end
+
+  describe ".to_html" do
+    it "returns a String" do
+      expect(Mactor.to_html("# Hello")).to be_a(String)
+    end
+
+    it "converts a heading to <h1>" do
+      expect(Mactor.to_html("# Hello")).to include("<h1>Hello</h1>")
+    end
+
+    it "converts a paragraph to <p>" do
+      expect(Mactor.to_html("Hello world")).to include("<p>Hello world</p>")
+    end
+
+    it "converts inline markup" do
+      expect(Mactor.to_html("**bold**")).to include("<strong>bold</strong>")
+    end
+  end
+
+  describe ".render" do
+    it "delegates to the given renderer" do
+      spy = Class.new(Mactor::Renderer::Base) do
+        def render_document(node) = node.children.length.to_s
+        def render_heading(node) = ""
+        def render_paragraph(node) = ""
+        def render_blank(node) = ""
+      end
+      expect(Mactor.render("# A\n\nB\n", renderer: spy.new)).to eq("2")
+    end
+
+    it "works with the default HTML renderer" do
+      result = Mactor.render("---", renderer: Mactor::Renderer::Html.new)
+      expect(result).to eq("<hr>\n")
+    end
+  end
+
+  describe "Ractor compatibility" do
+    it "can be called from within a Ractor" do
+      source = "# Hello\n\n**world**\n".freeze
+      result = Ractor.new(source) { |src| Mactor.to_html(src) }.value
+      expect(result).to include("<h1>")
+      expect(result).to include("<strong>world</strong>")
+    end
   end
 end
