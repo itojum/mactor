@@ -81,6 +81,23 @@ RSpec.describe Mactor::Renderer::Html do
     end
   end
 
+  describe "Node::ListItem task list" do
+    it "renders an unchecked checkbox for checked: false" do
+      node = Mactor::Node::ListItem.new(children: [text("todo")], checked: false)
+      expect(render(node)).to eq("<li><input type=\"checkbox\" disabled> todo</li>\n")
+    end
+
+    it "renders a checked checkbox for checked: true" do
+      node = Mactor::Node::ListItem.new(children: [text("done")], checked: true)
+      expect(render(node)).to eq("<li><input type=\"checkbox\" disabled checked> done</li>\n")
+    end
+
+    it "renders a plain <li> when checked is nil" do
+      node = Mactor::Node::ListItem.new(children: [text("plain")])
+      expect(render(node)).to eq("<li>plain</li>\n")
+    end
+  end
+
   describe "Node::Blockquote" do
     it "renders <blockquote>" do
       node = Mactor::Node::Blockquote.new(children: [text("quoted")])

@@ -95,6 +95,28 @@ RSpec.describe Mactor do
     end
   end
 
+  describe ".to_html with task list" do
+    it "renders unchecked items with a disabled checkbox" do
+      html = described_class.to_html("- [ ] unchecked item\n")
+      expect(html).to include("<input type=\"checkbox\" disabled>")
+      expect(html).to include("unchecked item")
+      expect(html).not_to include("[ ]")
+    end
+
+    it "renders checked items with a disabled checked checkbox" do
+      html = described_class.to_html("- [x] checked item\n")
+      expect(html).to include("<input type=\"checkbox\" disabled checked>")
+      expect(html).to include("checked item")
+      expect(html).not_to include("[x]")
+    end
+
+    it "renders a mixed task and plain list" do
+      html = described_class.to_html("- [ ] task\n- plain\n")
+      expect(html).to include("<input type=\"checkbox\" disabled>")
+      expect(html).to include("<li>plain</li>")
+    end
+  end
+
   describe ".to_html with table" do
     it "renders a basic table" do
       html = described_class.to_html("| Name | Age |\n| --- | --- |\n| Alice | 30 |\n")

@@ -29,7 +29,7 @@ module Mactor
     Paragraph = define_node(:children)
     CodeBlock = define_node(:content, language: { nil: true })
     List = define_node(:ordered, :children)
-    ListItem = define_node(:children)
+    ListItem = define_node(:children, checked: { nil: true })
     Blockquote = define_node(:children)
     ThematicBreak = define_node
     Table = define_node(:children)

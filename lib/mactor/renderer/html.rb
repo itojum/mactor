@@ -28,7 +28,10 @@ module Mactor
       end
 
       def render_list_item(node)
-        "<li>#{render_children(node)}</li>\n"
+        return "<li>#{render_children(node)}</li>\n" if node.checked.nil?
+
+        checkbox = node.checked ? "<input type=\"checkbox\" disabled checked>" : "<input type=\"checkbox\" disabled>"
+        "<li>#{checkbox} #{render_children(node)}</li>\n"
       end
 
       def render_blockquote(node)

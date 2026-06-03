@@ -43,12 +43,23 @@ module Mactor
       when Token::Blockquote
         Node::Blockquote.new(children: inline_nodes(token.content))
       when Token::List
-        list_children = token.items.map { |item| Node::ListItem.new(children: inline_nodes(item)) }.freeze
+        list_children = token.items.map { |item| parse_list_item(item) }.freeze
         Node::List.new(ordered: token.ordered, children: list_children)
       when Token::Table
         parse_table(token)
       when Token::Blank
         nil
+      end
+    end
+
+    TASK_ITEM_PATTERN = /\A\[([ xX])\] (.*)/m
+
+    def parse_list_item(content)
+      m = content.match(TASK_ITEM_PATTERN)
+      if m
+        Node::ListItem.new(children: inline_nodes(m[2]), checked: m[1] != " ")
+      else
+        Node::ListItem.new(children: inline_nodes(content))
       end
     end
 

@@ -96,6 +96,45 @@ RSpec.describe Mactor::Parser do
         node = parse(tokens).children.first
         expect(node).to have_attributes(ordered: true)
       end
+
+      it "sets checked: nil for a plain list item" do
+        tokens = lex("- plain\n")
+        item = parse(tokens).children.first.children.first
+        expect(item.checked).to be_nil
+      end
+    end
+
+    context "when parsing a task list" do
+      it "sets checked: false for an unchecked task item" do
+        tokens = lex("- [ ] unchecked\n")
+        item = parse(tokens).children.first.children.first
+        expect(item.checked).to be false
+      end
+
+      it "sets checked: true for a checked task item with [x]" do
+        tokens = lex("- [x] checked\n")
+        item = parse(tokens).children.first.children.first
+        expect(item.checked).to be true
+      end
+
+      it "sets checked: true for a checked task item with [X]" do
+        tokens = lex("- [X] checked\n")
+        item = parse(tokens).children.first.children.first
+        expect(item.checked).to be true
+      end
+
+      it "strips the [ ] prefix from the inline content" do
+        tokens = lex("- [ ] todo item\n")
+        item = parse(tokens).children.first.children.first
+        expect(item.children.first).to eq(Mactor::Node::Text.new(content: "todo item"))
+      end
+
+      it "mixes task and plain items in the same list" do
+        tokens = lex("- [ ] task\n- plain\n")
+        items = parse(tokens).children.first.children
+        expect(items[0].checked).to be false
+        expect(items[1].checked).to be_nil
+      end
     end
 
     context "with inline markup nesting" do
