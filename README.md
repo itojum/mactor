@@ -9,13 +9,7 @@ Mactor parses Markdown text into an AST (Abstract Syntax Tree) and renders it to
 Add to your Gemfile:
 
 ```ruby
-gem "mactor"
-```
-
-Or install directly:
-
-```bash
-gem install mactor
+gem "mactor", git: "https://github.com/itojum/mactor.git"
 ```
 
 ## Usage
