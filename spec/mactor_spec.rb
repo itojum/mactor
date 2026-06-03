@@ -98,7 +98,7 @@ RSpec.describe Mactor do
   describe "Ractor compatibility" do
     it "can be called from within a Ractor" do
       source = "# Hello\n\n**world**\n"
-      result = Ractor.new(source) { |src| described_class.to_html(src) }.value
+      result = Ractor.new(source, described_class) { |src, klass| klass.to_html(src) }.value
       expect(result).to include("<h1>")
       expect(result).to include("<strong>world</strong>")
     end
