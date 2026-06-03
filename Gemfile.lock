@@ -86,7 +86,7 @@ DEPENDENCIES
   mactor!
   rake (~> 13.0)
   rspec (~> 3.0)
-  rubocop (~> 1.21, >= 0)
+  rubocop
   rubocop-rspec
 
 CHECKSUMS
