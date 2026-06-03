@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 module Mactor
   module Node
     class << self
       private
 
       def define_node(*plain_attrs, **attr_specs)
-        all_specs = plain_attrs.each_with_object({}) { |a, h| h[a] = {}.freeze }
+        all_specs = plain_attrs.to_h { |a| [a, {}.freeze] }
                                .merge(attr_specs.transform_values(&:freeze))
                                .freeze
 
@@ -16,7 +18,7 @@ module Mactor
               kwargs[attr] = nil unless kwargs.key?(attr)
               raise ArgumentError, "#{attr} cannot be nil" if !opts.fetch(:nil, false) && kwargs[attr].nil?
             end
-            super(**kwargs)
+            super
           end
         end
       end
@@ -29,7 +31,7 @@ module Mactor
     List = define_node(:ordered, :children)
     ListItem = define_node(:children)
     Blockquote = define_node(:children)
-    ThematicBreak = define_node()
+    ThematicBreak = define_node
 
     Text = define_node(:content)
     Strong = define_node(:children)

@@ -7,7 +7,7 @@ RSpec.describe Mactor::Lexer do
   subject(:tokens) { described_class.new(source).tokenize }
 
   describe "#tokenize" do
-    context "empty string" do
+    context "with an empty string" do
       let(:source) { "" }
 
       it "returns an empty array" do
@@ -15,7 +15,7 @@ RSpec.describe Mactor::Lexer do
       end
     end
 
-    context "return type" do
+    context "with a non-empty source" do
       let(:source) { "hello" }
 
       it "returns an Array" do
@@ -31,7 +31,7 @@ RSpec.describe Mactor::Lexer do
       end
     end
 
-    context "blank line" do
+    context "with a blank line" do
       let(:source) { "   " }
 
       it "emits a Blank token" do
@@ -39,7 +39,7 @@ RSpec.describe Mactor::Lexer do
       end
     end
 
-    context "headings" do
+    context "with headings" do
       it "recognizes h1" do
         token = described_class.new("# Hello").tokenize.first
         expect(token).to be_a(Mactor::Token::Heading)
@@ -83,7 +83,7 @@ RSpec.describe Mactor::Lexer do
       end
     end
 
-    context "code block" do
+    context "with a code block" do
       it "tokenizes a fenced code block with a language tag" do
         token = described_class.new("```ruby\nputs \"hello\"\n```\n").tokenize.first
         expect(token).to be_a(Mactor::Token::CodeBlock)
@@ -116,16 +116,16 @@ RSpec.describe Mactor::Lexer do
         result = described_class.new(source).tokenize
         types = result.map(&:class)
         expect(types).to eq([
-          Mactor::Token::Paragraph,
-          Mactor::Token::Blank,
-          Mactor::Token::CodeBlock,
-          Mactor::Token::Blank,
-          Mactor::Token::Paragraph
-        ])
+                              Mactor::Token::Paragraph,
+                              Mactor::Token::Blank,
+                              Mactor::Token::CodeBlock,
+                              Mactor::Token::Blank,
+                              Mactor::Token::Paragraph
+                            ])
       end
     end
 
-    context "thematic break" do
+    context "with a thematic break" do
       it "recognizes ---" do
         expect(described_class.new("---").tokenize.first).to be_a(Mactor::Token::ThematicBreak)
       end
@@ -163,12 +163,12 @@ RSpec.describe Mactor::Lexer do
       end
     end
 
-    context "unordered list" do
+    context "with an unordered list" do
       it "groups consecutive - items into one List" do
         result = described_class.new("- foo\n- bar\n- baz\n").tokenize
         expect(result.length).to eq(1)
         expect(result.first).to be_a(Mactor::Token::List)
-        expect(result.first).to have_attributes(ordered: false, items: ["foo", "bar", "baz"])
+        expect(result.first).to have_attributes(ordered: false, items: %w[foo bar baz])
       end
 
       it "recognizes * as an unordered marker" do
@@ -179,9 +179,9 @@ RSpec.describe Mactor::Lexer do
 
       it "splits into separate Lists on a blank line" do
         result = described_class.new("- a\n- b\n\n- c\n").tokenize
-        lists = result.select { |t| t.is_a?(Mactor::Token::List) }
+        lists = result.grep(Mactor::Token::List)
         expect(lists.length).to eq(2)
-        expect(lists[0]).to have_attributes(items: ["a", "b"])
+        expect(lists[0]).to have_attributes(items: %w[a b])
         expect(lists[1]).to have_attributes(items: ["c"])
       end
 
@@ -198,7 +198,7 @@ RSpec.describe Mactor::Lexer do
       end
     end
 
-    context "unordered list with + marker" do
+    context "with a + marker unordered list" do
       it "recognizes + as an unordered marker" do
         token = described_class.new("+ item\n").tokenize.first
         expect(token).to be_a(Mactor::Token::List)
@@ -206,12 +206,12 @@ RSpec.describe Mactor::Lexer do
       end
     end
 
-    context "ordered list" do
+    context "with an ordered list" do
       it "groups consecutive ordered items into one List" do
         result = described_class.new("1. foo\n2. bar\n3. baz\n").tokenize
         expect(result.length).to eq(1)
         expect(result.first).to be_a(Mactor::Token::List)
-        expect(result.first).to have_attributes(ordered: true, items: ["foo", "bar", "baz"])
+        expect(result.first).to have_attributes(ordered: true, items: %w[foo bar baz])
       end
 
       it "splits into a separate List when switching to unordered" do
@@ -227,7 +227,7 @@ RSpec.describe Mactor::Lexer do
       end
     end
 
-    context "list and blockquote interleaving" do
+    context "with list and blockquote interleaving" do
       it "flushes a pending list when a blockquote follows" do
         result = described_class.new("- item\n> quote\n").tokenize
         expect(result[0]).to be_a(Mactor::Token::List)
@@ -241,7 +241,7 @@ RSpec.describe Mactor::Lexer do
       end
     end
 
-    context "blockquote" do
+    context "with a blockquote" do
       it "groups consecutive > lines into one Blockquote" do
         result = described_class.new("> Hello\n> World\n").tokenize
         expect(result.length).to eq(1)
@@ -256,7 +256,7 @@ RSpec.describe Mactor::Lexer do
 
       it "splits into separate Blockquotes on a blank line" do
         result = described_class.new("> a\n\n> b\n").tokenize
-        quotes = result.select { |t| t.is_a?(Mactor::Token::Blockquote) }
+        quotes = result.grep(Mactor::Token::Blockquote)
         expect(quotes.length).to eq(2)
         expect(quotes[0]).to have_attributes(content: "a")
         expect(quotes[1]).to have_attributes(content: "b")
@@ -269,17 +269,17 @@ RSpec.describe Mactor::Lexer do
       end
     end
 
-    context "blank lines" do
+    context "with blank lines" do
       it "handles multiple consecutive blank lines between paragraphs" do
         result = described_class.new("foo\n\n\n\nbar\n").tokenize
-        paragraphs = result.select { |t| t.is_a?(Mactor::Token::Paragraph) }
+        paragraphs = result.grep(Mactor::Token::Paragraph)
         expect(paragraphs.length).to eq(2)
         expect(paragraphs[0]).to have_attributes(content: "foo")
         expect(paragraphs[1]).to have_attributes(content: "bar")
       end
     end
 
-    context "blockquote without space after >" do
+    context "with a blockquote without space after >" do
       it "strips > and returns the rest as content" do
         token = described_class.new(">content\n").tokenize.first
         expect(token).to be_a(Mactor::Token::Blockquote)
@@ -287,18 +287,18 @@ RSpec.describe Mactor::Lexer do
       end
     end
 
-    context "consecutive code blocks" do
+    context "with consecutive code blocks" do
       it "tokenizes two adjacent code blocks" do
         source = "```\nfirst\n```\n```\nsecond\n```\n"
         result = described_class.new(source).tokenize
-        code_blocks = result.select { |t| t.is_a?(Mactor::Token::CodeBlock) }
+        code_blocks = result.grep(Mactor::Token::CodeBlock)
         expect(code_blocks.length).to eq(2)
         expect(code_blocks[0]).to have_attributes(content: "first")
         expect(code_blocks[1]).to have_attributes(content: "second")
       end
     end
 
-    context "paragraph" do
+    context "with a paragraph" do
       it "treats plain text as Paragraph" do
         token = described_class.new("plain text").tokenize.first
         expect(token).to be_a(Mactor::Token::Paragraph)
@@ -306,7 +306,7 @@ RSpec.describe Mactor::Lexer do
       end
     end
 
-    context "multiple lines" do
+    context "with multiple lines" do
       let(:source) { "# Title\n\nSome text\n" }
 
       it "emits Heading, Blank, then Paragraph" do
@@ -317,7 +317,7 @@ RSpec.describe Mactor::Lexer do
       end
     end
 
-    context "paragraph grouping" do
+    context "with paragraph grouping" do
       it "merges consecutive lines into one Paragraph" do
         source = "Hello world\nthis is same paragraph\n"
         result = described_class.new(source).tokenize
@@ -328,7 +328,7 @@ RSpec.describe Mactor::Lexer do
       it "splits on blank lines into separate Paragraphs" do
         source = "Hello world\nthis is same paragraph\n\nnew paragraph\n"
         result = described_class.new(source).tokenize
-        paragraphs = result.select { |t| t.is_a?(Mactor::Token::Paragraph) }
+        paragraphs = result.grep(Mactor::Token::Paragraph)
         expect(paragraphs.length).to eq(2)
         expect(paragraphs[0]).to have_attributes(content: "Hello world\nthis is same paragraph")
         expect(paragraphs[1]).to have_attributes(content: "new paragraph")

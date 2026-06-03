@@ -27,7 +27,7 @@ RSpec.describe Mactor::Parser do
       expect(parse(tokens).children).to be_empty
     end
 
-    context "heading" do
+    context "when parsing a heading" do
       it "converts Token::Heading to Node::Heading" do
         tokens = lex("# Hello")
         doc = parse(tokens)
@@ -42,7 +42,7 @@ RSpec.describe Mactor::Parser do
       end
     end
 
-    context "paragraph" do
+    context "when parsing a paragraph" do
       it "converts Token::Paragraph to Node::Paragraph" do
         tokens = lex("hello world")
         doc = parse(tokens)
@@ -56,7 +56,7 @@ RSpec.describe Mactor::Parser do
       end
     end
 
-    context "code block" do
+    context "when parsing a code block" do
       it "converts Token::CodeBlock to Node::CodeBlock" do
         tokens = lex("```ruby\nputs 'hi'\n```\n")
         node = parse(tokens).children.first
@@ -65,14 +65,14 @@ RSpec.describe Mactor::Parser do
       end
     end
 
-    context "thematic break" do
+    context "when parsing a thematic break" do
       it "converts Token::ThematicBreak to Node::ThematicBreak" do
         tokens = lex("---")
         expect(parse(tokens).children.first).to be_a(Mactor::Node::ThematicBreak)
       end
     end
 
-    context "blockquote" do
+    context "when parsing a blockquote" do
       it "converts Token::Blockquote to Node::Blockquote" do
         tokens = lex("> quoted")
         node = parse(tokens).children.first
@@ -81,7 +81,7 @@ RSpec.describe Mactor::Parser do
       end
     end
 
-    context "list" do
+    context "when parsing a list" do
       it "converts Token::List (unordered) to Node::List with ListItems" do
         tokens = lex("- foo\n- bar\n")
         node = parse(tokens).children.first
@@ -98,7 +98,7 @@ RSpec.describe Mactor::Parser do
       end
     end
 
-    context "inline markup nesting" do
+    context "with inline markup nesting" do
       it "processes inline nodes inside Strong content" do
         tokens = lex("**bold *inner* more**")
         para = parse(tokens).children.first
@@ -130,7 +130,7 @@ RSpec.describe Mactor::Parser do
       end
     end
 
-    context "multiple tokens" do
+    context "with multiple tokens" do
       it "builds a document with multiple children" do
         tokens = lex("# Title\n\nHello world\n")
         doc = parse(tokens)

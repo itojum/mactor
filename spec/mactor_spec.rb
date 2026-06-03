@@ -9,15 +9,15 @@ RSpec.describe Mactor do
 
   describe ".parse" do
     it "returns a Node::Document" do
-      expect(Mactor.parse("# Hello")).to be_a(Mactor::Node::Document)
+      expect(described_class.parse("# Hello")).to be_a(Mactor::Node::Document)
     end
 
     it "returns an empty Document for an empty string" do
-      expect(Mactor.parse("")).to eq(Mactor::Node::Document.new(children: []))
+      expect(described_class.parse("")).to eq(Mactor::Node::Document.new(children: []))
     end
 
     it "parses headings and paragraphs" do
-      doc = Mactor.parse("# Title\n\nHello world\n")
+      doc = described_class.parse("# Title\n\nHello world\n")
       expect(doc.children[0]).to be_a(Mactor::Node::Heading)
       expect(doc.children[1]).to be_a(Mactor::Node::Paragraph)
     end
@@ -25,19 +25,19 @@ RSpec.describe Mactor do
 
   describe ".to_html" do
     it "returns a String" do
-      expect(Mactor.to_html("# Hello")).to be_a(String)
+      expect(described_class.to_html("# Hello")).to be_a(String)
     end
 
     it "converts a heading to <h1>" do
-      expect(Mactor.to_html("# Hello")).to include("<h1>Hello</h1>")
+      expect(described_class.to_html("# Hello")).to include("<h1>Hello</h1>")
     end
 
     it "converts a paragraph to <p>" do
-      expect(Mactor.to_html("Hello world")).to include("<p>Hello world</p>")
+      expect(described_class.to_html("Hello world")).to include("<p>Hello world</p>")
     end
 
     it "converts inline markup" do
-      expect(Mactor.to_html("**bold**")).to include("<strong>bold</strong>")
+      expect(described_class.to_html("**bold**")).to include("<strong>bold</strong>")
     end
   end
 
@@ -45,15 +45,15 @@ RSpec.describe Mactor do
     it "delegates to the given renderer" do
       spy = Class.new(Mactor::Renderer::Base) do
         def render_document(node) = node.children.length.to_s
-        def render_heading(node) = ""
-        def render_paragraph(node) = ""
-        def render_blank(node) = ""
+        def render_heading(_node) = ""
+        def render_paragraph(_node) = ""
+        def render_blank(_node) = ""
       end
-      expect(Mactor.render("# A\n\nB\n", renderer: spy.new)).to eq("2")
+      expect(described_class.render("# A\n\nB\n", renderer: spy.new)).to eq("2")
     end
 
     it "works with the default HTML renderer" do
-      result = Mactor.render("---", renderer: Mactor::Renderer::Html.new)
+      result = described_class.render("---", renderer: Mactor::Renderer::Html.new)
       expect(result).to eq("<hr>\n")
     end
   end
@@ -74,7 +74,7 @@ RSpec.describe Mactor do
         puts 'hi'
         ```
       MD
-      html = Mactor.to_html(source)
+      html = described_class.to_html(source)
       expect(html).to include("<h1>Title</h1>")
       expect(html).to include("<strong>bold</strong>")
       expect(html).to include("<em>italic</em>")
@@ -85,20 +85,20 @@ RSpec.describe Mactor do
     end
 
     it "renders nested inline markup inside strong" do
-      html = Mactor.to_html("**bold *inner* more**")
+      html = described_class.to_html("**bold *inner* more**")
       expect(html).to include("<strong>bold <em>inner</em> more</strong>")
     end
 
     it "renders inline markup inside link text" do
-      html = Mactor.to_html("[**bold** link](https://example.com)")
+      html = described_class.to_html("[**bold** link](https://example.com)")
       expect(html).to include('<a href="https://example.com"><strong>bold</strong> link</a>')
     end
   end
 
   describe "Ractor compatibility" do
     it "can be called from within a Ractor" do
-      source = "# Hello\n\n**world**\n".freeze
-      result = Ractor.new(source) { |src| Mactor.to_html(src) }.value
+      source = "# Hello\n\n**world**\n"
+      result = Ractor.new(source) { |src| described_class.to_html(src) }.value
       expect(result).to include("<h1>")
       expect(result).to include("<strong>world</strong>")
     end

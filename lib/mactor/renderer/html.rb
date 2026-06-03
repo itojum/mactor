@@ -67,13 +67,13 @@ module Mactor
         "<img src=\"#{h(node.src)}\" alt=\"#{h(node.alt)}\"#{title_attr}>"
       end
 
+      ESCAPE = { "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", '"' => "&quot;" }.freeze
+
       private
 
       def render_children(node)
         node.children.map { |child| render(child) }.join
       end
-
-      ESCAPE = { "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", '"' => "&quot;" }.freeze
 
       def h(str)
         str.gsub(/[&<>"]/, ESCAPE)

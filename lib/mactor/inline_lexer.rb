@@ -9,7 +9,7 @@ module Mactor
       [:link,        /\[(.+?)\]\((.+?)\)/],
       [:strong,      /\*\*(.+?)\*\*/],
       [:emphasis,    /\*(.+?)\*/],
-      [:inline_code, /`(.+?)`/],
+      [:inline_code, /`(.+?)`/]
     ].map(&:freeze).freeze
 
     def initialize(source)
@@ -37,7 +37,7 @@ module Mactor
         end
 
         if earliest_match
-          tokens << Token::Text.new(content: remaining[0, earliest_pos]) if earliest_pos > 0
+          tokens << Token::Text.new(content: remaining[0, earliest_pos]) if earliest_pos.positive?
           tokens << build_token(earliest_type, earliest_match)
           remaining = remaining[earliest_match.end(0)..]
         else

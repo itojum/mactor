@@ -1,30 +1,30 @@
 # frozen_string_literal: true
 
-require 'mactor/node'
+require "mactor/node"
+
+BLOCK_NODES = [
+  { klass: Mactor::Node::Document,      args: { children: [] } },
+  { klass: Mactor::Node::Heading,       args: { level: 1, children: [] } },
+  { klass: Mactor::Node::Paragraph,     args: { children: [] } },
+  { klass: Mactor::Node::CodeBlock,     args: { language: "ruby", content: "puts 'hello'" } },
+  { klass: Mactor::Node::List,          args: { ordered: false, children: [] } },
+  { klass: Mactor::Node::ListItem,      args: { children: [] } },
+  { klass: Mactor::Node::Blockquote,    args: { children: [] } },
+  { klass: Mactor::Node::ThematicBreak, args: {} }
+].freeze
+
+INLINE_NODES = [
+  { klass: Mactor::Node::Text,       args: { content: "hello" } },
+  { klass: Mactor::Node::Strong,     args: { children: [] } },
+  { klass: Mactor::Node::Emphasis,   args: { children: [] } },
+  { klass: Mactor::Node::InlineCode, args: { content: "code" } },
+  { klass: Mactor::Node::Link,       args: { href: "https://example.com", title: "Example", children: [] } },
+  { klass: Mactor::Node::Image,      args: { src: "image.png", alt: "alt text", title: "Title" } }
+].freeze
+
+ALL_NODES = (BLOCK_NODES + INLINE_NODES).freeze
 
 RSpec.describe Mactor::Node do
-  BLOCK_NODES = [
-    { klass: Mactor::Node::Document,      args: { children: [] } },
-    { klass: Mactor::Node::Heading,       args: { level: 1, children: [] } },
-    { klass: Mactor::Node::Paragraph,     args: { children: [] } },
-    { klass: Mactor::Node::CodeBlock,     args: { language: "ruby", content: "puts 'hello'" } },
-    { klass: Mactor::Node::List,          args: { ordered: false, children: [] } },
-    { klass: Mactor::Node::ListItem,      args: { children: [] } },
-    { klass: Mactor::Node::Blockquote,    args: { children: [] } },
-    { klass: Mactor::Node::ThematicBreak, args: {} },
-  ].freeze
-
-  INLINE_NODES = [
-    { klass: Mactor::Node::Text,       args: { content: "hello" } },
-    { klass: Mactor::Node::Strong,     args: { children: [] } },
-    { klass: Mactor::Node::Emphasis,   args: { children: [] } },
-    { klass: Mactor::Node::InlineCode, args: { content: "code" } },
-    { klass: Mactor::Node::Link,       args: { href: "https://example.com", title: "Example", children: [] } },
-    { klass: Mactor::Node::Image,      args: { src: "image.png", alt: "alt text", title: "Title" } },
-  ].freeze
-
-  ALL_NODES = (BLOCK_NODES + INLINE_NODES).freeze
-
   describe "can be instantiated" do
     ALL_NODES.each do |entry|
       it entry[:klass].name do
@@ -57,8 +57,8 @@ RSpec.describe Mactor::Node do
   describe "nullable attributes" do
     {
       Mactor::Node::CodeBlock => { language: nil, content: "puts 'hello'" },
-      Mactor::Node::Link      => { href: "https://example.com", title: nil, children: [] },
-      Mactor::Node::Image     => { src: "image.png", alt: "alt text", title: nil },
+      Mactor::Node::Link => { href: "https://example.com", title: nil, children: [] },
+      Mactor::Node::Image => { src: "image.png", alt: "alt text", title: nil }
     }.each do |klass, args|
       it "#{klass.name} nullable attributes" do
         node = klass.new(**args)
@@ -76,7 +76,9 @@ RSpec.describe Mactor::Node do
     end
 
     it "raises ArgumentError when level is nil for Heading" do
-      expect { Mactor::Node::Heading.new(level: nil, children: []) }.to raise_error(ArgumentError, /level cannot be nil/)
+      expect do
+        Mactor::Node::Heading.new(level: nil, children: [])
+      end.to raise_error(ArgumentError, /level cannot be nil/)
     end
 
     it "raises ArgumentError when content is nil for Text" do

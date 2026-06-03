@@ -21,43 +21,43 @@ RSpec.describe Mactor::InlineLexer do
       expect(tokenize("hello")).to all(be_frozen)
     end
 
-    context "plain text" do
+    context "with plain text" do
       it "wraps unformatted text in a Text token" do
         expect(tokenize("plain text")).to eq([Mactor::Token::Text.new(content: "plain text")])
       end
     end
 
-    context "strong" do
+    context "with strong markup" do
       it "tokenizes **bold**" do
         expect(tokenize("**bold**")).to eq([Mactor::Token::Strong.new(content: "bold")])
       end
     end
 
-    context "emphasis" do
+    context "with emphasis markup" do
       it "tokenizes *em*" do
         expect(tokenize("*em*")).to eq([Mactor::Token::Emphasis.new(content: "em")])
       end
     end
 
-    context "inline code" do
+    context "with inline code" do
       it "tokenizes `code`" do
         expect(tokenize("`code`")).to eq([Mactor::Token::InlineCode.new(content: "code")])
       end
     end
 
-    context "link" do
+    context "with a link" do
       it "tokenizes [text](url)" do
         expect(tokenize("[click](https://example.com)")).to eq([
-          Mactor::Token::Link.new(text: "click", url: "https://example.com")
-        ])
+                                                                 Mactor::Token::Link.new(text: "click", url: "https://example.com")
+                                                               ])
       end
     end
 
-    context "image" do
+    context "with an image" do
       it "tokenizes ![alt](url)" do
         expect(tokenize("![logo](logo.png)")).to eq([
-          Mactor::Token::Image.new(alt: "logo", url: "logo.png")
-        ])
+                                                      Mactor::Token::Image.new(alt: "logo", url: "logo.png")
+                                                    ])
       end
 
       it "prefers Image over Link when ! precedes [" do
@@ -66,14 +66,14 @@ RSpec.describe Mactor::InlineLexer do
       end
     end
 
-    context "strong vs emphasis precedence" do
+    context "with strong vs emphasis precedence" do
       it "tokenizes ** as Strong, not Emphasis" do
         result = tokenize("**bold**")
         expect(result.first).to be_a(Mactor::Token::Strong)
       end
     end
 
-    context "edge cases" do
+    context "with edge cases" do
       it "treats ** with no content as plain text" do
         expect(tokenize("**")).to eq([Mactor::Token::Text.new(content: "**")])
       end
@@ -84,18 +84,18 @@ RSpec.describe Mactor::InlineLexer do
 
       it "handles multiple consecutive strong elements" do
         expect(tokenize("**a** **b**")).to eq([
-          Mactor::Token::Strong.new(content: "a"),
-          Mactor::Token::Text.new(content: " "),
-          Mactor::Token::Strong.new(content: "b"),
-        ])
+                                                Mactor::Token::Strong.new(content: "a"),
+                                                Mactor::Token::Text.new(content: " "),
+                                                Mactor::Token::Strong.new(content: "b")
+                                              ])
       end
 
       it "handles multiple consecutive emphasis elements" do
         expect(tokenize("*a* *b*")).to eq([
-          Mactor::Token::Emphasis.new(content: "a"),
-          Mactor::Token::Text.new(content: " "),
-          Mactor::Token::Emphasis.new(content: "b"),
-        ])
+                                            Mactor::Token::Emphasis.new(content: "a"),
+                                            Mactor::Token::Text.new(content: " "),
+                                            Mactor::Token::Emphasis.new(content: "b")
+                                          ])
       end
 
       it "tokenizes strong containing emphasis markers as Strong (non-greedy)" do
@@ -110,32 +110,32 @@ RSpec.describe Mactor::InlineLexer do
       end
     end
 
-    context "mixed content" do
+    context "with mixed content" do
       it "splits surrounding text and inline elements" do
         expect(tokenize("Hello **world** and *em*")).to eq([
-          Mactor::Token::Text.new(content: "Hello "),
-          Mactor::Token::Strong.new(content: "world"),
-          Mactor::Token::Text.new(content: " and "),
-          Mactor::Token::Emphasis.new(content: "em"),
-        ])
+                                                             Mactor::Token::Text.new(content: "Hello "),
+                                                             Mactor::Token::Strong.new(content: "world"),
+                                                             Mactor::Token::Text.new(content: " and "),
+                                                             Mactor::Token::Emphasis.new(content: "em")
+                                                           ])
       end
 
       it "handles multiple different inline elements" do
         expect(tokenize("Hello **world** and [link](url)")).to eq([
-          Mactor::Token::Text.new(content: "Hello "),
-          Mactor::Token::Strong.new(content: "world"),
-          Mactor::Token::Text.new(content: " and "),
-          Mactor::Token::Link.new(text: "link", url: "url"),
-        ])
+                                                                    Mactor::Token::Text.new(content: "Hello "),
+                                                                    Mactor::Token::Strong.new(content: "world"),
+                                                                    Mactor::Token::Text.new(content: " and "),
+                                                                    Mactor::Token::Link.new(text: "link", url: "url")
+                                                                  ])
       end
 
       it "handles inline code alongside other elements" do
         expect(tokenize("use `foo` and **bar**")).to eq([
-          Mactor::Token::Text.new(content: "use "),
-          Mactor::Token::InlineCode.new(content: "foo"),
-          Mactor::Token::Text.new(content: " and "),
-          Mactor::Token::Strong.new(content: "bar"),
-        ])
+                                                          Mactor::Token::Text.new(content: "use "),
+                                                          Mactor::Token::InlineCode.new(content: "foo"),
+                                                          Mactor::Token::Text.new(content: " and "),
+                                                          Mactor::Token::Strong.new(content: "bar")
+                                                        ])
       end
     end
   end

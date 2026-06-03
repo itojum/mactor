@@ -17,9 +17,9 @@ RSpec.describe Mactor::Renderer::Html do
   describe "Node::Document" do
     it "concatenates children" do
       doc = Mactor::Node::Document.new(children: [
-        Mactor::Node::Paragraph.new(children: [text("foo")]),
-        Mactor::Node::Paragraph.new(children: [text("bar")])
-      ])
+                                         Mactor::Node::Paragraph.new(children: [text("foo")]),
+                                         Mactor::Node::Paragraph.new(children: [text("bar")])
+                                       ])
       expect(render(doc)).to eq("<p>foo</p>\n<p>bar</p>\n")
     end
 
@@ -67,16 +67,16 @@ RSpec.describe Mactor::Renderer::Html do
   describe "Node::List" do
     it "renders <ul> for unordered list" do
       node = Mactor::Node::List.new(ordered: false, children: [
-        Mactor::Node::ListItem.new(children: [text("foo")]),
-        Mactor::Node::ListItem.new(children: [text("bar")])
-      ])
+                                      Mactor::Node::ListItem.new(children: [text("foo")]),
+                                      Mactor::Node::ListItem.new(children: [text("bar")])
+                                    ])
       expect(render(node)).to eq("<ul>\n<li>foo</li>\n<li>bar</li>\n</ul>\n")
     end
 
     it "renders <ol> for ordered list" do
       node = Mactor::Node::List.new(ordered: true, children: [
-        Mactor::Node::ListItem.new(children: [text("one")])
-      ])
+                                      Mactor::Node::ListItem.new(children: [text("one")])
+                                    ])
       expect(render(node)).to eq("<ol>\n<li>one</li>\n</ol>\n")
     end
   end
@@ -179,16 +179,16 @@ RSpec.describe Mactor::Renderer::Html do
   describe "inline elements within block elements" do
     it "renders strong inside a paragraph" do
       node = Mactor::Node::Paragraph.new(children: [
-        text("Hello "),
-        Mactor::Node::Strong.new(children: [text("world")])
-      ])
+                                           text("Hello "),
+                                           Mactor::Node::Strong.new(children: [text("world")])
+                                         ])
       expect(render(node)).to eq("<p>Hello <strong>world</strong></p>\n")
     end
 
     it "renders emphasis nested inside strong" do
       node = Mactor::Node::Strong.new(children: [
-        Mactor::Node::Emphasis.new(children: [text("bold italic")])
-      ])
+                                        Mactor::Node::Emphasis.new(children: [text("bold italic")])
+                                      ])
       expect(render(node)).to eq("<strong><em>bold italic</em></strong>")
     end
   end

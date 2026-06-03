@@ -8,20 +8,20 @@ RSpec.describe Mactor::Renderer::Base do
 
   let(:subclass) do
     Class.new(described_class) do
-      def render_document(node)       = "document"
-      def render_heading(node)        = "heading:#{node.level}"
-      def render_paragraph(node)      = "paragraph"
-      def render_code_block(node)     = "code_block"
-      def render_list(node)           = "list"
-      def render_list_item(node)      = "list_item"
-      def render_blockquote(node)     = "blockquote"
-      def render_thematic_break(node) = "thematic_break"
-      def render_text(node)           = "text"
-      def render_strong(node)         = "strong"
-      def render_emphasis(node)       = "emphasis"
-      def render_inline_code(node)    = "inline_code"
-      def render_link(node)           = "link"
-      def render_image(node)          = "image"
+      def render_document(_node) = "document"
+      def render_heading(node) = "heading:#{node.level}"
+      def render_paragraph(_node)      = "paragraph"
+      def render_code_block(_node)     = "code_block"
+      def render_list(_node)           = "list"
+      def render_list_item(_node)      = "list_item"
+      def render_blockquote(_node)     = "blockquote"
+      def render_thematic_break(_node) = "thematic_break"
+      def render_text(_node)           = "text"
+      def render_strong(_node)         = "strong"
+      def render_emphasis(_node)       = "emphasis"
+      def render_inline_code(_node)    = "inline_code"
+      def render_link(_node)           = "link"
+      def render_image(_node)          = "image"
     end
   end
 
