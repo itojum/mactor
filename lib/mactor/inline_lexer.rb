@@ -9,7 +9,7 @@ module Mactor
       [:link,        /\[(.+?)\]\((.+?)\)/],
       [:strong,      /\*\*(.+?)\*\*/],
       [:emphasis,    /\*(.+?)\*/],
-      [:inline_code, /`(.+?)`/]
+      [:inline_code, /(`+)(.+?)\1/]
     ].map(&:freeze).freeze
 
     def initialize(source)
@@ -57,7 +57,10 @@ module Mactor
       when :link        then Token::Link.new(text: match[1], url: match[2])
       when :strong      then Token::Strong.new(content: match[1])
       when :emphasis    then Token::Emphasis.new(content: match[1])
-      when :inline_code then Token::InlineCode.new(content: match[1])
+      when :inline_code
+        content = match[2]
+        content = content[1..-2] if content.start_with?(" ") && content.end_with?(" ") && content.strip.length.positive?
+        Token::InlineCode.new(content: content)
       end
     end
   end

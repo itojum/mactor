@@ -43,6 +43,32 @@ RSpec.describe Mactor::InlineLexer do
       it "tokenizes `code`" do
         expect(tokenize("`code`")).to eq([Mactor::Token::InlineCode.new(content: "code")])
       end
+
+      it "tokenizes a double-backtick span containing a backtick" do
+        expect(tokenize("`` `code` ``")).to eq([Mactor::Token::InlineCode.new(content: "`code`")])
+      end
+
+      it "tokenizes a double-backtick span containing a single backtick alone" do
+        expect(tokenize("`` ` ``")).to eq([Mactor::Token::InlineCode.new(content: "`")])
+      end
+
+      it "strips one leading and trailing space from a double-backtick span" do
+        expect(tokenize("`` `foo` ``").first.content).to eq("`foo`")
+      end
+
+      it "does not strip spaces when the content is entirely spaces" do
+        token = tokenize("``  ``").first
+        expect(token).to be_a(Mactor::Token::InlineCode)
+        expect(token.content).to eq("  ")
+      end
+
+      it "single-backtick span is not affected by the double-backtick rule" do
+        expect(tokenize("`foo` and `` `bar` ``")).to eq([
+          Mactor::Token::InlineCode.new(content: "foo"),
+          Mactor::Token::Text.new(content: " and "),
+          Mactor::Token::InlineCode.new(content: "`bar`")
+        ])
+      end
     end
 
     context "with a link" do
