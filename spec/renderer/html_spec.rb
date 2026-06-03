@@ -207,6 +207,60 @@ RSpec.describe Mactor::Renderer::Html do
     end
   end
 
+  describe "Node::Table" do
+    def cell(content_str, header: false, align: nil)
+      Mactor::Node::TableCell.new(children: [text(content_str)], header: header, align: align)
+    end
+
+    def header_row(*cols)
+      Mactor::Node::TableRow.new(children: cols.map { |c| cell(c, header: true) })
+    end
+
+    def data_row(*cols)
+      Mactor::Node::TableRow.new(children: cols.map { |c| cell(c, header: false) })
+    end
+
+    it "renders a table with thead and tbody" do
+      node = Mactor::Node::Table.new(children: [
+        Mactor::Node::TableHead.new(children: [header_row("Name", "Age")]),
+        Mactor::Node::TableBody.new(children: [data_row("Alice", "30")])
+      ])
+      expect(render(node)).to eq(
+        "<table>\n<thead>\n<tr>\n<th>Name</th>\n<th>Age</th>\n</tr>\n</thead>\n" \
+        "<tbody>\n<tr>\n<td>Alice</td>\n<td>30</td>\n</tr>\n</tbody>\n</table>\n"
+      )
+    end
+
+    it "renders th for header cells and td for data cells" do
+      th = Mactor::Node::TableCell.new(children: [text("H")], header: true, align: nil)
+      td = Mactor::Node::TableCell.new(children: [text("D")], header: false, align: nil)
+      expect(render(th)).to eq("<th>H</th>\n")
+      expect(render(td)).to eq("<td>D</td>\n")
+    end
+
+    it "renders alignment via style attribute" do
+      left_td = Mactor::Node::TableCell.new(children: [text("L")], header: false, align: :left)
+      right_td = Mactor::Node::TableCell.new(children: [text("R")], header: false, align: :right)
+      center_td = Mactor::Node::TableCell.new(children: [text("C")], header: false, align: :center)
+      expect(render(left_td)).to eq("<td style=\"text-align: left\">L</td>\n")
+      expect(render(right_td)).to eq("<td style=\"text-align: right\">R</td>\n")
+      expect(render(center_td)).to eq("<td style=\"text-align: center\">C</td>\n")
+    end
+
+    it "renders no style attribute when align is nil" do
+      td = Mactor::Node::TableCell.new(children: [text("X")], header: false, align: nil)
+      expect(render(td)).not_to include("style=")
+    end
+
+    it "renders an empty tbody for a header-only table" do
+      node = Mactor::Node::Table.new(children: [
+        Mactor::Node::TableHead.new(children: [header_row("H")]),
+        Mactor::Node::TableBody.new(children: [])
+      ])
+      expect(render(node)).to include("<tbody>\n</tbody>\n")
+    end
+  end
+
   describe "Node::CodeBlock language with special characters" do
     it "renders language name containing special characters as-is" do
       node = Mactor::Node::CodeBlock.new(language: "c++", content: "int x;")

@@ -32,6 +32,11 @@ module Mactor
     ListItem = define_node(:children)
     Blockquote = define_node(:children)
     ThematicBreak = define_node
+    Table = define_node(:children)
+    TableHead = define_node(:children)
+    TableBody = define_node(:children)
+    TableRow = define_node(:children)
+    TableCell = define_node(:children, align: { nil: true }, header: { nil: true })
 
     Text = define_node(:content)
     Strong = define_node(:children)

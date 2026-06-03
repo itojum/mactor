@@ -95,6 +95,30 @@ RSpec.describe Mactor do
     end
   end
 
+  describe ".to_html with table" do
+    it "renders a basic table" do
+      html = described_class.to_html("| Name | Age |\n| --- | --- |\n| Alice | 30 |\n")
+      expect(html).to include("<table>")
+      expect(html).to include("<thead>")
+      expect(html).to include("<th>Name</th>")
+      expect(html).to include("<th>Age</th>")
+      expect(html).to include("<tbody>")
+      expect(html).to include("<td>Alice</td>")
+      expect(html).to include("<td>30</td>")
+    end
+
+    it "renders alignment style attributes" do
+      html = described_class.to_html("| L | R |\n| :--- | ---: |\n| a | b |\n")
+      expect(html).to include("style=\"text-align: left\"")
+      expect(html).to include("style=\"text-align: right\"")
+    end
+
+    it "renders inline markup inside cells" do
+      html = described_class.to_html("| **bold** |\n| --- |\n")
+      expect(html).to include("<strong>bold</strong>")
+    end
+  end
+
   describe "Ractor compatibility" do
     it "can be called from within a Ractor" do
       source = "# Hello\n\n**world**\n"

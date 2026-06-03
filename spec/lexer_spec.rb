@@ -298,6 +298,77 @@ RSpec.describe Mactor::Lexer do
       end
     end
 
+    context "with a table" do
+      it "tokenizes a simple table" do
+        source = "| Name | Age |\n| --- | --- |\n| Alice | 30 |\n"
+        token = described_class.new(source).tokenize.first
+        expect(token).to be_a(Mactor::Token::Table)
+        expect(token.headers).to eq(["Name", "Age"])
+        expect(token.aligns).to eq([nil, nil])
+        expect(token.rows).to eq([["Alice", "30"]])
+      end
+
+      it "parses left alignment" do
+        source = "| H |\n| :--- |\n"
+        token = described_class.new(source).tokenize.first
+        expect(token.aligns).to eq([:left])
+      end
+
+      it "parses right alignment" do
+        source = "| H |\n| ---: |\n"
+        token = described_class.new(source).tokenize.first
+        expect(token.aligns).to eq([:right])
+      end
+
+      it "parses center alignment" do
+        source = "| H |\n| :---: |\n"
+        token = described_class.new(source).tokenize.first
+        expect(token.aligns).to eq([:center])
+      end
+
+      it "parses mixed alignments" do
+        source = "| L | C | R | D |\n| :--- | :---: | ---: | --- |\n"
+        token = described_class.new(source).tokenize.first
+        expect(token.aligns).to eq([:left, :center, :right, nil])
+      end
+
+      it "tokenizes a table with no body rows" do
+        source = "| H1 | H2 |\n| --- | --- |\n"
+        token = described_class.new(source).tokenize.first
+        expect(token).to be_a(Mactor::Token::Table)
+        expect(token.rows).to eq([])
+      end
+
+      it "tokenizes a table with multiple body rows" do
+        source = "| H |\n| --- |\n| r1 |\n| r2 |\n| r3 |\n"
+        token = described_class.new(source).tokenize.first
+        expect(token.rows).to eq([["r1"], ["r2"], ["r3"]])
+      end
+
+      it "emits a Paragraph when there is no separator row" do
+        token = described_class.new("| just | a |\n").tokenize.first
+        expect(token).to be_a(Mactor::Token::Paragraph)
+      end
+
+      it "emits Paragraphs when the separator row is invalid" do
+        tokens = described_class.new("| H |\n| not-sep |\n").tokenize
+        expect(tokens).to all(be_a(Mactor::Token::Paragraph))
+      end
+
+      it "flushes a pending paragraph before a table" do
+        result = described_class.new("text\n| H |\n| --- |\n").tokenize
+        expect(result[0]).to be_a(Mactor::Token::Paragraph)
+        expect(result[1]).to be_a(Mactor::Token::Table)
+      end
+
+      it "is followed by a paragraph after a blank line" do
+        result = described_class.new("| H |\n| --- |\n\nparagraph\n").tokenize
+        expect(result[0]).to be_a(Mactor::Token::Table)
+        expect(result[1]).to be_a(Mactor::Token::Blank)
+        expect(result[2]).to be_a(Mactor::Token::Paragraph)
+      end
+    end
+
     context "with a paragraph" do
       it "treats plain text as Paragraph" do
         token = described_class.new("plain text").tokenize.first

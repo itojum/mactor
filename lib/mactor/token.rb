@@ -19,6 +19,8 @@ module Mactor
     List = define_token(:ordered, :items)
     ThematicBreak = define_token
     Blockquote = define_token(:content)
+    TableLine = define_token(:raw)
+    Table = define_token(:headers, :aligns, :rows)
 
     Text = define_token(:content)
     Strong = define_token(:content)

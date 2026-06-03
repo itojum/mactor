@@ -67,6 +67,28 @@ module Mactor
         "<img src=\"#{h(node.src)}\" alt=\"#{h(node.alt)}\"#{title_attr}>"
       end
 
+      def render_table(node)
+        "<table>\n#{render_children(node)}</table>\n"
+      end
+
+      def render_table_head(node)
+        "<thead>\n#{render_children(node)}</thead>\n"
+      end
+
+      def render_table_body(node)
+        "<tbody>\n#{render_children(node)}</tbody>\n"
+      end
+
+      def render_table_row(node)
+        "<tr>\n#{render_children(node)}</tr>\n"
+      end
+
+      def render_table_cell(node)
+        tag = node.header ? "th" : "td"
+        align_attr = node.align ? " style=\"text-align: #{node.align}\"" : ""
+        "<#{tag}#{align_attr}>#{render_children(node)}</#{tag}>\n"
+      end
+
       ESCAPE = { "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", '"' => "&quot;" }.freeze
 
       private

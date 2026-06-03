@@ -45,9 +45,29 @@ module Mactor
       when Token::List
         list_children = token.items.map { |item| Node::ListItem.new(children: inline_nodes(item)) }.freeze
         Node::List.new(ordered: token.ordered, children: list_children)
+      when Token::Table
+        parse_table(token)
       when Token::Blank
         nil
       end
+    end
+
+    def parse_table(token)
+      aligns = token.aligns
+      header_cells = token.headers.each_with_index.map do |content, i|
+        Node::TableCell.new(children: inline_nodes(content), align: aligns[i], header: true)
+      end.freeze
+      head = Node::TableHead.new(children: [Node::TableRow.new(children: header_cells)].freeze)
+
+      body_rows = token.rows.map do |row|
+        cells = row.each_with_index.map do |content, i|
+          Node::TableCell.new(children: inline_nodes(content), align: aligns[i], header: false)
+        end.freeze
+        Node::TableRow.new(children: cells)
+      end.freeze
+      body = Node::TableBody.new(children: body_rows)
+
+      Node::Table.new(children: [head, body].freeze)
     end
 
     def inline_nodes(content)

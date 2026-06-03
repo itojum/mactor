@@ -130,6 +130,51 @@ RSpec.describe Mactor::Parser do
       end
     end
 
+    context "when parsing a table" do
+      it "converts Token::Table to Node::Table" do
+        tokens = lex("| H |\n| --- |\n| r1 |\n")
+        node = parse(tokens).children.first
+        expect(node).to be_a(Mactor::Node::Table)
+      end
+
+      it "builds TableHead with header cells" do
+        tokens = lex("| Name | Age |\n| --- | --- |\n")
+        table = parse(tokens).children.first
+        head = table.children.first
+        expect(head).to be_a(Mactor::Node::TableHead)
+        row = head.children.first
+        expect(row).to be_a(Mactor::Node::TableRow)
+        expect(row.children.length).to eq(2)
+        expect(row.children).to all(be_a(Mactor::Node::TableCell))
+        expect(row.children.first.header).to be true
+      end
+
+      it "builds TableBody with data cells" do
+        tokens = lex("| H |\n| --- |\n| r1 |\n")
+        table = parse(tokens).children.first
+        body = table.children.last
+        expect(body).to be_a(Mactor::Node::TableBody)
+        expect(body.children.first).to be_a(Mactor::Node::TableRow)
+        expect(body.children.first.children.first.header).to be false
+      end
+
+      it "assigns alignment to cells" do
+        tokens = lex("| H |\n| :---: |\n| r |\n")
+        table = parse(tokens).children.first
+        header_cell = table.children.first.children.first.children.first
+        data_cell = table.children.last.children.first.children.first
+        expect(header_cell.align).to eq(:center)
+        expect(data_cell.align).to eq(:center)
+      end
+
+      it "parses inline content in cells" do
+        tokens = lex("| **bold** |\n| --- |\n")
+        table = parse(tokens).children.first
+        cell = table.children.first.children.first.children.first
+        expect(cell.children.first).to be_a(Mactor::Node::Strong)
+      end
+    end
+
     context "with multiple tokens" do
       it "builds a document with multiple children" do
         tokens = lex("# Title\n\nHello world\n")

@@ -27,6 +27,11 @@ module Mactor
       def render_inline_code(node) = raise NotImplementedError, "#{self.class}#render_inline_code"
       def render_link(node) = raise NotImplementedError, "#{self.class}#render_link"
       def render_image(node) = raise NotImplementedError, "#{self.class}#render_image"
+      def render_table(node) = raise NotImplementedError, "#{self.class}#render_table"
+      def render_table_head(node) = raise NotImplementedError, "#{self.class}#render_table_head"
+      def render_table_body(node) = raise NotImplementedError, "#{self.class}#render_table_body"
+      def render_table_row(node) = raise NotImplementedError, "#{self.class}#render_table_row"
+      def render_table_cell(node) = raise NotImplementedError, "#{self.class}#render_table_cell"
 
       private
 
