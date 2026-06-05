@@ -303,9 +303,9 @@ RSpec.describe Mactor::Lexer do
         source = "| Name | Age |\n| --- | --- |\n| Alice | 30 |\n"
         token = described_class.new(source).tokenize.first
         expect(token).to be_a(Mactor::Token::Table)
-        expect(token.headers).to eq(["Name", "Age"])
+        expect(token.headers).to eq(%w[Name Age])
         expect(token.aligns).to eq([nil, nil])
-        expect(token.rows).to eq([["Alice", "30"]])
+        expect(token.rows).to eq([%w[Alice 30]])
       end
 
       it "parses left alignment" do

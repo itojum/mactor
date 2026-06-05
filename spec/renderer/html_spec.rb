@@ -239,9 +239,9 @@ RSpec.describe Mactor::Renderer::Html do
 
     it "renders a table with thead and tbody" do
       node = Mactor::Node::Table.new(children: [
-        Mactor::Node::TableHead.new(children: [header_row("Name", "Age")]),
-        Mactor::Node::TableBody.new(children: [data_row("Alice", "30")])
-      ])
+                                       Mactor::Node::TableHead.new(children: [header_row("Name", "Age")]),
+                                       Mactor::Node::TableBody.new(children: [data_row("Alice", "30")])
+                                     ])
       expect(render(node)).to eq(
         "<table>\n<thead>\n<tr>\n<th>Name</th>\n<th>Age</th>\n</tr>\n</thead>\n" \
         "<tbody>\n<tr>\n<td>Alice</td>\n<td>30</td>\n</tr>\n</tbody>\n</table>\n"
@@ -271,9 +271,9 @@ RSpec.describe Mactor::Renderer::Html do
 
     it "renders an empty tbody for a header-only table" do
       node = Mactor::Node::Table.new(children: [
-        Mactor::Node::TableHead.new(children: [header_row("H")]),
-        Mactor::Node::TableBody.new(children: [])
-      ])
+                                       Mactor::Node::TableHead.new(children: [header_row("H")]),
+                                       Mactor::Node::TableBody.new(children: [])
+                                     ])
       expect(render(node)).to include("<tbody>\n</tbody>\n")
     end
   end

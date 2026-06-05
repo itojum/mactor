@@ -22,6 +22,8 @@ module Mactor
       Node::Document.new(children: children.freeze)
     end
 
+    TASK_ITEM_PATTERN = /\A\[([ xX])\] (.*)/m
+
     private
 
     def advance
@@ -51,8 +53,6 @@ module Mactor
         nil
       end
     end
-
-    TASK_ITEM_PATTERN = /\A\[([ xX])\] (.*)/m
 
     def parse_list_item(content)
       m = content.match(TASK_ITEM_PATTERN)

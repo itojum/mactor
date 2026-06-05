@@ -64,10 +64,10 @@ RSpec.describe Mactor::InlineLexer do
 
       it "single-backtick span is not affected by the double-backtick rule" do
         expect(tokenize("`foo` and `` `bar` ``")).to eq([
-          Mactor::Token::InlineCode.new(content: "foo"),
-          Mactor::Token::Text.new(content: " and "),
-          Mactor::Token::InlineCode.new(content: "`bar`")
-        ])
+                                                          Mactor::Token::InlineCode.new(content: "foo"),
+                                                          Mactor::Token::Text.new(content: " and "),
+                                                          Mactor::Token::InlineCode.new(content: "`bar`")
+                                                        ])
       end
     end
 
